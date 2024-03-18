@@ -1,0 +1,58 @@
+{
+  "type": "object",
+  "required": ["datasets"],
+  "allOf": [{
+    "title": "Données",
+    "properties": {
+      "datasets": {
+        "type": "array",
+        "items": [{
+          "title": "Jeu de données",
+          "type": "object",
+          "x-fromUrl": "api/v1/datasets?status=finalized&q={q}&select=id,title&rest=true&owner={context.owner.type}:{context.owner.id}",
+          "x-itemsProp": "results",
+          "x-itemTitle": "title",
+          "x-itemKey": "href",
+          "properties": {
+            "href": {"type": "string"},
+            "title": {"type": "string"},
+            "id": {"type": "string"},
+            "applicationKeyPermissions": {
+              "type": "object",
+              "const": { "operations": ["readSafeSchema", "createLine"] }
+            }
+          }
+        }]
+      }
+    }
+  }, {
+    "title": "Rendu",
+    "properties": {
+      "density": {
+        "title": "Densité",
+        "type": "string",
+        "oneOf": [
+          { "const": "default", "title": "Normale" },
+          { "const": "compact", "title": "Compacte" },
+          { "const": "comfortable", "title": "Aérée" }
+        ],
+        "default": "default"
+      },
+      "layout": {
+        "title": "Rendu des groupes",
+        "type": "string",
+        "oneOf": [
+          { "const": "sections", "title": "Sections" },
+          { "const": "tabs", "title": "Onglets" },
+          { "const": "vertical-tabs", "title": "Onglets empilés" },
+          { "const": "expansion-panels", "title": "Accordéon" },
+          { "const": "none", "title": "Aucun" }
+        ],
+        "default": "sections"
+      }
+    }
+  }],
+  "definitions": {
+    
+  }
+}

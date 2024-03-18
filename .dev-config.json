@@ -1,0 +1,17 @@
+{
+  "datasets": [
+    {
+      "href": "http://localhost:5888/data-fair/api/v1/datasets/ielc4buo1fi0bb3xx8j3uvv8",
+      "title": "test questionnaire",
+      "id": "ielc4buo1fi0bb3xx8j3uvv8",
+      "applicationKeyPermissions": {
+        "operations": [
+          "readSafeSchema",
+          "createLine"
+        ]
+      }
+    }
+  ],
+  "layout": "sections",
+  "density": "default"
+}
