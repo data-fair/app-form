@@ -1,12 +1,12 @@
 {
-  "name": "app-form",
+  "name": "@data-fair/app-form",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
   "scripts": {
     "dev": "APP_URL=http://localhost:3000/app/ df-dev-server",
     "dev-src": "vite",
-    "build": "vite build",
+    "build": "rm -rf dist && PUBLIC_URL=https://cdn.jsdelivr.net/npm/@data-fair/app-dashboards@${npm_package_version}/dist vite build",
+    "prepublishOnly": "npm run build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
