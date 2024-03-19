@@ -4,7 +4,7 @@ import Vjsf from '@koumoul/vjsf'
 import { v2compat } from '@koumoul/vjsf/compat/v2'
 import { ofetch } from 'ofetch'
 import useAppInfo from '../composables/useAppInfo'
-import { token, tokenReady, alert, alertMessage } from '../context.js'
+import { token, tokenReady, alert, alertMessage, submitted } from '../context.js'
 
 const { config, datasetUrl } = useAppInfo()
 const options = { density: config.density, titleDepth: 3, locale: 'fr' }
@@ -30,7 +30,7 @@ if (Object.values(properties).length) {
 } else {
   delete schema.properties
 }
-// console.log(schema)
+
 const data = ref({})
 const form = ref(null)
 
@@ -52,6 +52,7 @@ const addLine = async () => {
         alert.value = true
       }
     })
+    submitted.value = true
   } catch (err) {}
 }
 </script>
@@ -64,11 +65,17 @@ const addLine = async () => {
       :options="options"
     />
   </v-form>
-  <v-btn
-    color="primary"
-    :loading="!tokenReady"
-    @click="addLine"
-  >
-    Envoyer
-  </v-btn>
+  <v-row>
+    <v-col
+      class="text-center"
+    >
+      <v-btn
+        color="primary"
+        :loading="!tokenReady"
+        @click="addLine"
+      >
+        Envoyer
+      </v-btn>
+    </v-col>
+  </v-row>
 </template>

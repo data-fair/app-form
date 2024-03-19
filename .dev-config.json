@@ -13,5 +13,7 @@
     }
   ],
   "layout": "sections",
-  "density": "default"
+  "density": "default",
+  "variant": "outlined",
+  "submitMessage": "Merci, votre réponse a bien été enregistrée !!"
 }

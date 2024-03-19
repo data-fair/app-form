@@ -10,7 +10,7 @@ export const token = computedAsync(async () => {
 })
 
 export const tokenReady = ref(false)
-
+export const submitted = ref(false)
 export const alert = ref(false)
 export const alertMessage = ref('')
 

@@ -49,6 +49,26 @@
           { "const": "none", "title": "Aucun" }
         ],
         "default": "sections"
+      },
+      "variant": {
+        "title": "Style des éléments",
+        "type": "string",
+        "oneOf": [
+          { "const": "outlined", "title": "Bordure" },
+          { "const": "plain", "title": "Rien" },
+          { "const": "underlined", "title": "Souligné" },
+          { "const": "filled", "title": "Rempli" },
+          { "const": "solo", "title": "Solo" },
+          { "const": "solo-inverted", "title": "Solo inversé" },
+          { "const": "solo-filled", "title": "Solo rempli" }
+        ],
+        "default": "filled"
+      },
+      "submitMessage":{
+        "title": "Message après envoi",
+        "type": "string",
+        "x-display": "textarea",
+        "default": "Merci, votre réponse a bien été enregistrée !"
       }
     }
   }],

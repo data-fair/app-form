@@ -3,11 +3,22 @@ import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import { defaultOptions } from '@data-fair/lib/vuetify.js'
 import App from './App.vue'
+import useAppInfo from './composables/useAppInfo'
+
+const { config } = useAppInfo()
 
 window.iFrameResizer = {
   heightCalculationMethod: 'taggedElement'
 }
 
+defaultOptions.defaults = {
+  global: {
+    variant: config.variant
+  },
+  VExpansionPanels: {
+    mandatory: 'force'
+  }
+}
 const app = createApp(App)
 
 app.use(createVuetify(defaultOptions))

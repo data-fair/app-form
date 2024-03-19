@@ -2,11 +2,11 @@
 import DfForm from './components/form.vue'
 import useAppInfo from './composables/useAppInfo'
 import { ofetch } from 'ofetch'
-import { alert, alertMessage } from './context.js'
+import { alert, alertMessage, submitted } from './context.js'
 
-let configureError
+let configureError, config
 try {
-  useAppInfo()
+  config = useAppInfo().config
 } catch (e) {
   configureError = e.message
   ofetch(window.APPLICATION.href + '/error', { body: { message: e.message || e }, method: 'POST' })
@@ -18,24 +18,32 @@ try {
   <v-app>
     <v-main>
       <v-container data-iframe-height>
-        <suspense v-if="!configureError">
-          <df-form />
-        </suspense>
-        <v-snackbar
-          v-model="alert"
-          multi-line
-        >
-          {{ alertMessage }}
-          <template #actions>
-            <v-btn
-              color="red"
-              variant="text"
-              @click="alert = false"
-            >
-              Ok
-            </v-btn>
-          </template>
-        </v-snackbar>
+        <template v-if="!configureError">
+          <suspense v-if="!submitted">
+            <df-form />
+          </suspense>
+          <v-alert
+            v-else
+            type="info"
+            class="text-center ma-16"
+            :text="config.submitMessage"
+          />
+          <v-snackbar
+            v-model="alert"
+            multi-line
+          >
+            {{ alertMessage }}
+            <template #actions>
+              <v-btn
+                color="red"
+                variant="text"
+                @click="alert = false"
+              >
+                Ok
+              </v-btn>
+            </template>
+          </v-snackbar>
+        </template>
       </v-container>
     </v-main>
   </v-app>
