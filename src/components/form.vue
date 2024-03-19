@@ -39,7 +39,7 @@ const addLine = async () => {
   const formData = new FormData()
   // if (this.file) formData.append('attachment', this.file)
 
-  for (const [key, value] of Object.entries(data)) {
+  for (const [key, value] of Object.entries(data.value)) {
     formData.append(key, value)
   }
   try {
@@ -48,7 +48,6 @@ const addLine = async () => {
       method: 'POST',
       headers: { 'x-anonymousToken': token.value },
       async onResponseError ({ response }) {
-        console.log(response)
         alertMessage.value = response.status + ' - ' + response._data
         alert.value = true
       }
