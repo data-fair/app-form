@@ -4,6 +4,7 @@ import { createVuetify } from 'vuetify'
 import { defaultOptions } from '@data-fair/lib/vuetify.js'
 import App from './App.vue'
 import useAppInfo from './composables/useAppInfo'
+import { fr } from 'vuetify/locale'
 
 const { config } = useAppInfo()
 
@@ -19,6 +20,11 @@ defaultOptions.defaults = {
     mandatory: 'force'
   }
 }
+defaultOptions.locale = {
+  locale: 'fr',
+  messages: { fr }
+}
+
 const app = createApp(App)
 
 app.use(createVuetify(defaultOptions))

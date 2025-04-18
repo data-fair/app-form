@@ -1,9 +1,9 @@
 {
   "datasets": [
     {
-      "href": "http://localhost:5888/data-fair/api/v1/datasets/ielc4buo1fi0bb3xx8j3uvv8",
-      "title": "test questionnaire",
-      "id": "ielc4buo1fi0bb3xx8j3uvv8",
+      "href": "http://localhost:5888/data-fair/api/v1/datasets/prix-des-carburants-par-station",
+      "title": "Prix des carburants par station",
+      "id": "prix-des-carburants-par-station",
       "applicationKeyPermissions": {
         "operations": [
           "readSafeSchema",
@@ -12,8 +12,8 @@
       }
     }
   ],
+  "submitMessage": "Merci, votre réponse a bien été enregistrée !",
+  "variant": "filled",
   "layout": "sections",
-  "density": "default",
-  "variant": "outlined",
-  "submitMessage": "Merci, votre réponse a bien été enregistrée !!"
+  "density": "default"
 }
