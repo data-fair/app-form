@@ -18,6 +18,9 @@ defaultOptions.defaults = {
   },
   VExpansionPanels: {
     mandatory: 'force'
+  },
+  VTimePicker: {
+    format: '24hr'
   }
 }
 defaultOptions.locale = {
