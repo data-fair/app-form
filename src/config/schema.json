@@ -1,0 +1,106 @@
+{
+  "type": "object",
+  "x-exports": [
+    "types",
+    "resolvedSchemaJson"
+  ],
+  "required": ["datasets"],
+  "allOf": [
+    {
+      "title": "Données",
+      "properties": {
+        "datasets": {
+          "type": "array",
+          "items": [
+            {
+              "title": "Jeu de données",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "href": { "type": "string" },
+                "id": { "type": "string" },
+                "title": { "type": "string" },
+                "schema": { "type": "array" },
+                "attachmentsAsImage": { "type": "boolean" },
+                "userPermissions": { "type": "array" },
+                "applicationKeyPermissions": {
+                  "type": "object",
+                  "const": {
+                    "operations": [
+                      "readSafeSchema",
+                      "createLine"
+                    ]
+                  }
+                }
+              },
+              "layout": {
+                "getItems": {
+                  "url": "api/v1/datasets?status=finalized&q={q}&select=title,schema,attachmentsAsImage,userPermissions&rest=true&owner={context.owner.type}:{context.owner.id}&size=100&sort=createdAt:-1",
+                  "itemKey": "data.href",
+                  "itemTitle": "data.title",
+                  "itemsResults": "data.results"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "title": "Rendu",
+      "properties": {
+        "density": {
+          "title": "Densité",
+          "type": "string",
+          "default": "default",
+          "oneOf": [
+            { "const": "default", "title": "Normale" },
+            { "const": "compact", "title": "Compacte" },
+            { "const": "comfortable", "title": "Aérée" }
+          ]
+        },
+        "layout": {
+          "title": "Rendu des groupes",
+          "type": "string",
+          "default": "sections",
+          "oneOf": [
+            { "const": "sections", "title": "Sections" },
+            { "const": "tabs", "title": "Onglets" },
+            { "const": "vertical-tabs", "title": "Onglets empilés" },
+            { "const": "expansion-panels", "title": "Accordéon" },
+            { "const": "none", "title": "Aucun" }
+          ]
+        },
+        "groups": {
+          "title": "Regroupement des champs x-group",
+          "type": "string",
+          "default": "all",
+          "oneOf": [
+            { "const": "all", "title": "Tous" },
+            { "const": "none", "title": "Aucun" }
+          ]
+        },
+        "variant": {
+          "title": "Style des éléments",
+          "type": "string",
+          "default": "filled",
+          "oneOf": [
+            { "const": "outlined", "title": "Bordure" },
+            { "const": "plain", "title": "Rien" },
+            { "const": "underlined", "title": "Souligné" },
+            { "const": "filled", "title": "Rempli" },
+            { "const": "solo", "title": "Solo" },
+            { "const": "solo-inverted", "title": "Solo inversé" },
+            { "const": "solo-filled", "title": "Solo rempli" }
+          ]
+        },
+        "submitMessage": {
+          "title": "Message après envoi",
+          "type": "string",
+          "layout": "textarea",
+          "default": "Merci, votre réponse a bien été enregistrée !"
+        }
+      }
+    }
+  ]
+}

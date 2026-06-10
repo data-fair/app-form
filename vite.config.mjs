@@ -4,14 +4,12 @@ import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 import { commonjsDeps } from '@koumoul/vjsf/utils/build.js'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   base: process.env.PUBLIC_URL ?? '/app/',
   plugins: [
     vue({
       template: { transformAssetUrls }
     }),
-    // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
     vuetify({
       autoImport: true,
       styles: {
@@ -35,9 +33,4 @@ export default defineConfig({
   optimizeDeps: {
     include: commonjsDeps
   }
-  // build: {
-  //   commonjsOptions: {
-  //     include: commonjsDepsPaths
-  //   }
-  // }
 })

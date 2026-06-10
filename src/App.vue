@@ -1,50 +1,54 @@
-<script setup>
-import DfForm from './components/form.vue'
-import useAppInfo from './composables/useAppInfo'
-import { ofetch } from 'ofetch'
-import { alert, alertMessage, submitted } from './context.js'
+<script setup lang="ts">
+import { watch, defineAsyncComponent } from 'vue'
+import { useConfig } from '@/composables/config'
+import { useConfigSync } from '@/composables/config-sync'
+import reactiveSearchParams from '@data-fair/lib-vue/reactive-search-params-global.js'
 
-let configureError, config
-try {
-  config = useAppInfo().config
-} catch (e) {
-  configureError = e.message
-  ofetch(window.APPLICATION.href + '/error', { body: { message: e.message || e }, method: 'POST' })
-}
+window.iFrameResizer = { heightCalculationMethod: 'taggedElement' }
 
+const { config, dataset } = useConfig()
+useConfigSync()
+
+watch(() => config.value, (newConfig) => {
+  if (reactiveSearchParams.draft === 'true' && window.parent && newConfig) {
+    const datasets = newConfig.datasets ? [newConfig.datasets[0]] : []
+    const current = newConfig.datasets
+    if (!current || current.length !== datasets.length || current[0]?.href !== datasets[0]?.href) {
+      window.parent.postMessage({
+        type: 'set-config',
+        content: { field: 'datasets', value: datasets }
+      }, '*')
+    }
+  }
+}, { immediate: true, deep: true })
+
+const DfForm = defineAsyncComponent(() => import('@/components/form.vue'))
 </script>
 
 <template>
   <v-app>
     <v-main>
       <v-container data-iframe-height>
-        <template v-if="!configureError">
-          <suspense v-if="!submitted">
-            <df-form />
-          </suspense>
-          <v-alert
-            v-else
-            type="info"
-            class="text-center ma-16"
-            :text="config.submitMessage"
-          />
-          <v-snackbar
-            v-model="alert"
-            multi-line
-          >
-            {{ alertMessage }}
-            <template #actions>
-              <v-btn
-                color="red"
-                variant="text"
-                @click="alert = false"
-              >
-                Ok
-              </v-btn>
-            </template>
-          </v-snackbar>
-        </template>
+        <suspense>
+          <df-form v-if="dataset" :key="dataset.href" />
+          <template #fallback>
+            <v-row
+              style="height:200px"
+              class="ma-0 align-center"
+            >
+              <v-col class="text-center">
+                <v-progress-circular
+                  :size="60"
+                  :width="5"
+                  color="primary"
+                  indeterminate
+                />
+              </v-col>
+            </v-row>
+          </template>
+        </suspense>
       </v-container>
     </v-main>
+    <df-ui-notif />
   </v-app>
 </template>
