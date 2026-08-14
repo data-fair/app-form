@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import Vjsf from '@koumoul/vjsf'
 import { v2compat } from '@koumoul/vjsf/compat/v2'
 import { ofetch } from 'ofetch'
@@ -15,7 +15,7 @@ const { token, tokenReady, reset: resetToken } = useAnonymousToken('lines')
 const datasetUrl = computed(() => dataset.value.href)
 const schemaUrl = computed(() => `${datasetUrl.value}/safe-schema?mimeType=application%2Fschema%2Bjson`)
 
-const { data: rawV2Schema, loading: schemaLoading } = useFetch<unknown>(schemaUrl)
+const { data: rawV2Schema, loading: schemaLoading, error: schemaError } = useFetch<unknown>(schemaUrl)
 
 const baseSchema = ref<VJSFSchema | null>(null)
 const schema = ref<VJSFSchema | null>(null)
@@ -56,10 +56,23 @@ function buildSchema (s: VJSFSchema) {
       }
     }
     if (Object.values(groups).length) {
-      localSchema.allOf = Object.entries(groups).map(([title, properties]) => ({ title, properties }))
-      localSchema.layout = config.value.layout
-    }
-    if (Object.values(properties).length) {
+      // 'sections' n'existe pas dans le registre des composants de vjsf 4
+      // (seul 'section' est valide) : on traduit la valeur de config historique.
+      const layoutConfig = config.value.layout ?? 'sections'
+      const layout = layoutConfig === 'sections' ? 'section' : layoutConfig
+      localSchema.layout = layout
+      const sections: Array<{ title: string; properties: Record<string, VJSFProperty> }> =
+        Object.entries(groups).map(([title, properties]) => ({ title, properties }))
+      // En mode onglets/accordéon, un bloc de champs sans titre rendrait
+      // un onglet vide : on le transforme en section titrée.
+      if (Object.values(properties).length && ['tabs', 'vertical-tabs', 'expansion-panels'].includes(layout)) {
+        sections.push({ title: 'Autres champs', properties })
+        delete localSchema.properties
+      } else {
+        localSchema.properties = properties
+      }
+      localSchema.allOf = sections
+    } else if (Object.values(properties).length) {
       localSchema.properties = properties
     } else {
       delete localSchema.properties
@@ -76,6 +89,18 @@ watch(rawV2Schema, (v) => {
   baseSchema.value = s
   buildSchema(s)
 }, { immediate: true })
+
+// Débloque le service de capture dès que le formulaire est réellement rendu
+// (sinon chaque capture attend le délai complet de df:capture-delay).
+watch(schema, (v) => {
+  if (!v) return
+  nextTick(() => window.triggerCapture?.(true))
+}, { immediate: true })
+
+watch(schemaError, (e) => {
+  if (!e) return
+  window.triggerCapture?.()
+})
 
 watch([
   () => config.value.layout,

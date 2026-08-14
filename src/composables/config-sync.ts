@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, toRaw } from 'vue'
 import { useConfig } from './config'
 import type { AppConfig } from '@/types'
 
@@ -44,7 +44,9 @@ export function useConfigSync (): void {
     if (content.configuration) {
       config.value = content.configuration as AppConfig
     } else if (content.datasets) {
-      config.value = content as AppConfig
+      // Fusionner plutôt qu'écraser : certains émetteurs n'envoient
+      // qu'un sous-arbre modifié (perte des champs frères sinon).
+      config.value = { ...toRaw(config.value), ...content } as AppConfig
     } else if (content.field && 'value' in content) {
       const next = JSON.parse(JSON.stringify(config.value)) as Record<string, unknown>
       setByPath(next, content.field, content.value)

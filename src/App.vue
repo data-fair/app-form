@@ -29,8 +29,14 @@ const DfForm = defineAsyncComponent(() => import('@/components/form.vue'))
   <v-app>
     <v-main>
       <v-container data-iframe-height>
-        <suspense>
-          <df-form v-if="dataset" :key="dataset.href" />
+        <v-empty-state
+          v-if="!dataset"
+          icon="mdi-database-off"
+          title="Configuration incomplète"
+          text="Veuillez sélectionner un jeu de données dans la configuration de l'application."
+        />
+        <suspense v-else>
+          <df-form :key="dataset.href" />
           <template #fallback>
             <v-row
               style="height:200px"
