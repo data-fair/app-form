@@ -1,4 +1,5 @@
 import type { Field } from '@data-fair/lib-common-types/application/index.js'
+import type { Densite, RegroupementDesChampsXGroup, RenduDesGroupes, StyleDesElements } from './config/index.js'
 
 export interface VJSFProperty {
   title?: string
@@ -34,23 +35,25 @@ export interface VJSFSchema {
   [key: string]: unknown
 }
 
+export interface DatasetConfig {
+  title: string
+  href: string
+  id: string
+  slug?: string
+  schema?: Field[]
+  userPermissions?: string[]
+  applicationKeyPermissions?: { operations?: string[] }
+  attachmentsAsImage?: boolean
+  finalizedAt?: string
+  [key: string]: unknown
+}
+
 export interface AppConfig {
-  datasets?: Array<{
-    title: string
-    href: string
-    id: string
-    slug?: string
-    schema?: Field[]
-    userPermissions?: string[]
-    applicationKeyPermissions?: { operations?: string[] }
-    attachmentsAsImage?: boolean
-    finalizedAt?: string
-    [key: string]: unknown
-  }>
-  density?: 'default' | 'compact' | 'comfortable'
-  layout?: 'sections' | 'tabs' | 'vertical-tabs' | 'expansion-panels' | 'none'
-  variant?: 'outlined' | 'plain' | 'underlined' | 'filled' | 'solo' | 'solo-inverted' | 'solo-filled'
-  groups?: string
+  datasets?: DatasetConfig[]
+  density?: Densite
+  layout?: RenduDesGroupes
+  variant?: StyleDesElements
+  groups?: RegroupementDesChampsXGroup
   submitMessage?: string
   [key: string]: unknown
 }

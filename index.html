@@ -1,35 +1,34 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html><!-- pas de lang : posé par le proxy data-fair -->
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="df:capture-delay" content="5">
-  <meta name="df:overflow" content="true">
-  <meta name="df:sync-state" content="true">
-  <meta name="df:filter-concepts" content="false">
-  <meta name="df:sync-config" content="true">
-  <meta name="df:vjsf" content="3">
-  <meta name="application-name" content="app-form">
-  <meta name="title" content="Formulaire de saisie">
-  <meta name="description" lang="fr"
-    content="Cette application permet de configurer un formulaire de saisie ouvert à tout le monde pour un jeu de données éditable.">
-  <meta name="thumbnail" content="thumbnail.png" />
+    <style>@layer vuetify-core, vuetify-components, vuetify-overrides, vuetify-utilities, vuetify-final;</style>
+    <link href="/simple-directory/api/sites/_theme.css" rel="stylesheet">
+    <link rel="icon" href="/favicon.png">
 
-  <title lang="fr">Formulaire de saisie</title>
+    <title>Formulaire de saisie</title><!-- nom du modèle : le proxy le remplace par le titre de l'application -->
 
-  <link rel="icon" href="/favicon.png">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css?family=Nunito:300,400,500,700,400italic|Material+Icons" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" />
+    <!-- contrat data-fair, lu à l'exécution -->
+    <meta name="df:vjsf" content="3">
+    <meta name="df:filter-concepts" content="false">
+    <meta name="df:sync-config" content="true">
+    <meta name="df:sync-state" content="true">
+    <meta name="df:overflow" content="true">
+    <meta name="df:capture-delay" content="5">
 
-  <!-- Capture a global variable defined by data-fair's reverse proxy. -->
-  <script type="text/javascript">window.APPLICATION=%APPLICATION%;</script>
-</head>
+    <!-- catalogue, lu à l'import -->
+    <meta name="application-name" content="app-form">
+    <meta name="description" lang="fr"
+      content="Cette application permet de configurer un formulaire de saisie ouvert à tout le monde pour un jeu de données éditable.">
 
-<body>
-  <div id="app"></div>
-  <script type="module" src="/src/main.ts"></script>
-</body>
-
+    <!-- infos publiques du site (thème, couleurs, locale), lues par createSession -->
+    <script src="/simple-directory/api/sites/_public.js"></script>
+    <script>window.APPLICATION=%APPLICATION%;</script>
+  </head>
+  <body>
+    <div id="app" style="height:100vh"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>

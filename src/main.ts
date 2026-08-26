@@ -1,4 +1,4 @@
-import 'vuetify/styles'
+import '@data-fair/lib-vuetify/style/global.scss'
 import { createApp } from 'vue'
 import { createVuetify } from 'vuetify'
 import { vuetifySessionOptions } from '@data-fair/lib-vuetify'
@@ -26,7 +26,7 @@ window.vIframeOptions = { reactiveParams: reactiveSearchParams }
 const i18n = createI18n({ legacy: false, locale: 'fr', fallbackLocale: 'en' })
 
 async function init () {
-  const session = await createSession({ directoryUrl: '/simple-directory', siteInfo: true })
+  const session = await createSession({ directoryUrl: '/simple-directory' })
   i18n.global.locale.value = session.lang.value
   const app = createApp(App)
   app.use(createLocaleDayjs(session.lang.value))

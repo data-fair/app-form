@@ -1,8 +1,10 @@
 import vue from '@vitejs/plugin-vue'
+import vueI18n from '@intlify/unplugin-vue-i18n/vite'
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 import { commonjsDeps } from '@koumoul/vjsf/utils/build.js'
+import { settingsPath } from '@data-fair/lib-vuetify/vite.js'
 
 export default defineConfig({
   base: process.env.PUBLIC_URL ?? '/app/',
@@ -10,10 +12,11 @@ export default defineConfig({
     vue({
       template: { transformAssetUrls }
     }),
+    vueI18n({}),
     vuetify({
       autoImport: true,
       styles: {
-        configFile: 'src/assets/settings.scss'
+        configFile: settingsPath
       }
     })
   ],

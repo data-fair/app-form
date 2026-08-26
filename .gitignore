@@ -32,4 +32,7 @@ coverage
 
 # generated config types
 /src/config/.type/
-public/config-schema.json
+
+# tests
+/tests/output/
+playwright-report

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { watch, defineAsyncComponent } from 'vue'
+import DfUiNotif from '@data-fair/lib-vuetify/ui-notif.vue'
+import { mdiDatabaseOff } from '@mdi/js'
 import { useConfig } from '@/composables/config'
 import { useConfigSync } from '@/composables/config-sync'
 import reactiveSearchParams from '@data-fair/lib-vue/reactive-search-params-global.js'
-
-window.iFrameResizer = { heightCalculationMethod: 'taggedElement' }
 
 const { config, dataset } = useConfig()
 useConfigSync()
@@ -31,7 +31,7 @@ const DfForm = defineAsyncComponent(() => import('@/components/form.vue'))
       <v-container data-iframe-height>
         <v-empty-state
           v-if="!dataset"
-          icon="mdi-database-off"
+          :icon="mdiDatabaseOff"
           title="Configuration incomplète"
           text="Veuillez sélectionner un jeu de données dans la configuration de l'application."
         />
@@ -55,6 +55,6 @@ const DfForm = defineAsyncComponent(() => import('@/components/form.vue'))
         </suspense>
       </v-container>
     </v-main>
-    <df-ui-notif />
+    <DfUiNotif />
   </v-app>
 </template>

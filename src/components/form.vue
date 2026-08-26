@@ -7,12 +7,14 @@ import { useFetch } from '@data-fair/lib-vue/fetch.js'
 import { useAsyncAction } from '@data-fair/lib-vue/async-action.js'
 import { useConfig } from '@/composables/config'
 import { useAnonymousToken } from '@/composables/anonymous-token'
+import { useSession } from '@data-fair/lib-vue/session.js'
 import type { VJSFSchema, VJSFProperty } from '@/types'
 
 const { config, dataset, accessKey } = useConfig()
+const session = useSession()
 const { token, tokenReady, reset: resetToken } = useAnonymousToken('lines')
 
-const datasetUrl = computed(() => dataset.value.href)
+const datasetUrl = computed(() => dataset.value?.href ?? '')
 const schemaUrl = computed(() => `${datasetUrl.value}/safe-schema?mimeType=application%2Fschema%2Bjson`)
 
 const { data: rawV2Schema, loading: schemaLoading, error: schemaError } = useFetch<unknown>(schemaUrl)
@@ -36,7 +38,7 @@ function buildSchema (s: VJSFSchema) {
     delete (localSchema.properties as Record<string, VJSFProperty>)[attachmentEntry[0]]
     localSchema.properties = localSchema.properties ?? {}
     localSchema.properties.__file = {
-      title: (attachmentEntry[1] as VJSFProperty).title || (dataset.value.attachmentsAsImage ? 'Image' : 'Document numérique attaché'),
+      title: (attachmentEntry[1] as VJSFProperty).title || (dataset.value?.attachmentsAsImage ? 'Image' : 'Document numérique attaché'),
       type: 'object',
       layout: 'file-input'
     }
@@ -92,9 +94,11 @@ watch(rawV2Schema, (v) => {
 
 // Débloque le service de capture dès que le formulaire est réellement rendu
 // (sinon chaque capture attend le délai complet de df:capture-delay).
+// Capture en image fixe (pas d'animation) : le formulaire n'a pas de rendu
+// animé, et un mode gif exigerait de définir window.animateCaptureFrame.
 watch(schema, (v) => {
   if (!v) return
-  nextTick(() => window.triggerCapture?.(true))
+  nextTick(() => window.triggerCapture?.())
 }, { immediate: true })
 
 watch(schemaError, (e) => {
@@ -112,7 +116,7 @@ watch([
 const options = computed(() => ({
   density: config.value.density,
   titleDepth: 3,
-  locale: 'fr',
+  locale: session.lang.value,
   removeAdditional: true,
   initialValidation: 'always'
 }))

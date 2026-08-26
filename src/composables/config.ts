@@ -1,13 +1,13 @@
 import reactiveSearchParams from '@data-fair/lib-vue/reactive-search-params-global.js'
 import { computed, inject, ref, type App, type Ref, type ComputedRef } from 'vue'
-import type { Application, Dataset } from '@data-fair/lib-common-types/application/index.js'
+import type { Application } from '@data-fair/lib-common-types/application/index.js'
 import createDFrameAdapter from '@data-fair/frame/lib/vue-reactive/state-change-adapter.js'
-import type { AppConfig } from '@/types'
+import type { AppConfig, DatasetConfig } from '@/types'
 
 export interface ConfigState {
   application: Application & { href: string }
   config: Ref<AppConfig>
-  dataset: Ref<Dataset>
+  dataset: Ref<DatasetConfig | undefined>
   directoryUrl: ComputedRef<string>
   dFrameAdapter: ReturnType<typeof createDFrameAdapter>
   accessKey: Ref<string | null>
@@ -17,10 +17,7 @@ export function createConfig () {
   const application = window.APPLICATION
   const config = ref<AppConfig>(application.configuration || {})
 
-  if (!config.value) throw new Error('Il n\'y a pas de configuration définie')
-
-  const dataset = computed<Dataset>(() => config.value.datasets?.[0] as Dataset)
-  if (!dataset.value) throw new Error('Veuillez sélectionner une source de données')
+  const dataset = computed<DatasetConfig | undefined>(() => config.value.datasets?.[0])
 
   const last = window.APPLICATION?.exposedUrl?.split('/').pop()
   const toks = last?.split('%3A')
