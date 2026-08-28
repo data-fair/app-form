@@ -33,6 +33,9 @@ coverage
 # generated config types
 /src/config/.type/
 
+# local dev config
+.dev-config.json
+
 # tests
 /tests/output/
 playwright-report
