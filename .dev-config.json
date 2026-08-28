@@ -1,9 +1,9 @@
 {
   "datasets": [
     {
-      "href": "http://localhost:5888/data-fair/api/v1/datasets/prix-des-carburants-par-station",
-      "title": "Prix des carburants par station",
-      "id": "prix-des-carburants-par-station",
+      "href": "https://koumoul.com/data-fair/api/v1/datasets/7eoanp5x7e8s4zqh4pitp0d7",
+      "title": "Où louer une salle ? (pour la direction métier)",
+      "id": "7eoanp5x7e8s4zqh4pitp0d7",
       "applicationKeyPermissions": {
         "operations": [
           "readSafeSchema",
@@ -13,7 +13,8 @@
     }
   ],
   "submitMessage": "Merci, votre réponse a bien été enregistrée !",
-  "variant": "filled",
+  "variant": "solo-inverted",
   "layout": "sections",
-  "density": "default"
+  "density": "comfortable",
+  "groups": "all"
 }

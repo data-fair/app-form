@@ -8,7 +8,8 @@ import { useAsyncAction } from '@data-fair/lib-vue/async-action.js'
 import { useConfig } from '@/composables/config'
 import { useAnonymousToken } from '@/composables/anonymous-token'
 import { useSession } from '@data-fair/lib-vue/session.js'
-import type { VJSFSchema, VJSFProperty } from '@/types'
+import { buildSchema } from '@/utils/build-schema'
+import type { VJSFSchema } from '@/types'
 
 const { config, dataset, accessKey } = useConfig()
 const session = useSession()
@@ -24,72 +25,22 @@ const schema = ref<VJSFSchema | null>(null)
 const attachmentKey = ref<string | null>(null)
 const schemaKey = ref(0)
 
-function buildSchema (s: VJSFSchema) {
-  const localSchema: VJSFSchema = JSON.parse(JSON.stringify(s))
-
-  Object.entries(localSchema.properties ?? {}).forEach(([key, value]) => {
-    const v = value as VJSFProperty
-    if (!v.title) v.title = key
+function rebuildSchema () {
+  if (!baseSchema.value) return
+  const { schema: built, attachmentKey: key } = buildSchema(baseSchema.value, {
+    layout: config.value.layout,
+    groups: config.value.groups,
+    attachmentsAsImage: dataset.value?.attachmentsAsImage
   })
-
-  const attachmentEntry = Object.entries(localSchema.properties ?? {}).find(([, f]) => (f as VJSFProperty)['x-concept']?.id === 'attachment')
-  if (attachmentEntry) {
-    attachmentKey.value = attachmentEntry[0]
-    delete (localSchema.properties as Record<string, VJSFProperty>)[attachmentEntry[0]]
-    localSchema.properties = localSchema.properties ?? {}
-    localSchema.properties.__file = {
-      title: (attachmentEntry[1] as VJSFProperty).title || (dataset.value?.attachmentsAsImage ? 'Image' : 'Document numérique attaché'),
-      type: 'object',
-      layout: 'file-input'
-    }
-    const g = (attachmentEntry[1] as VJSFProperty)['x-group']
-    if (g) localSchema.properties.__file['x-group'] = g
-  }
-
-  if (config.value.layout !== 'none') {
-    const groups: Record<string, Record<string, VJSFProperty>> = {}
-    const properties: Record<string, VJSFProperty> = {}
-    for (const [key, prop] of Object.entries(localSchema.properties ?? {}) as [string, VJSFProperty][]) {
-      if (config.value.groups !== 'none' && prop['x-group']) {
-        groups[prop['x-group']] = groups[prop['x-group']] || {}
-        groups[prop['x-group']][key] = prop
-      } else {
-        properties[key] = prop
-      }
-    }
-    if (Object.values(groups).length) {
-      // 'sections' n'existe pas dans le registre des composants de vjsf 4
-      // (seul 'section' est valide) : on traduit la valeur de config historique.
-      const layoutConfig = config.value.layout ?? 'sections'
-      const layout = layoutConfig === 'sections' ? 'section' : layoutConfig
-      localSchema.layout = layout
-      const sections: Array<{ title: string; properties: Record<string, VJSFProperty> }> =
-        Object.entries(groups).map(([title, properties]) => ({ title, properties }))
-      // En mode onglets/accordéon, un bloc de champs sans titre rendrait
-      // un onglet vide : on le transforme en section titrée.
-      if (Object.values(properties).length && ['tabs', 'vertical-tabs', 'expansion-panels'].includes(layout)) {
-        sections.push({ title: 'Autres champs', properties })
-        delete localSchema.properties
-      } else {
-        localSchema.properties = properties
-      }
-      localSchema.allOf = sections
-    } else if (Object.values(properties).length) {
-      localSchema.properties = properties
-    } else {
-      delete localSchema.properties
-    }
-  }
-
-  schema.value = localSchema
+  attachmentKey.value = key
+  schema.value = built
   schemaKey.value++
 }
 
 watch(rawV2Schema, (v) => {
   if (!v) return
-  const s = v2compat(v) as VJSFSchema
-  baseSchema.value = s
-  buildSchema(s)
+  baseSchema.value = v2compat(v) as VJSFSchema
+  rebuildSchema()
 }, { immediate: true })
 
 // Débloque le service de capture dès que le formulaire est réellement rendu
@@ -110,7 +61,7 @@ watch([
   () => config.value.layout,
   () => config.value.groups
 ], () => {
-  if (baseSchema.value) buildSchema(baseSchema.value)
+  rebuildSchema()
 })
 
 const options = computed(() => ({

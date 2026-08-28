@@ -38,7 +38,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
-    "@data-fair/dev-server": "^2.3.4",
+    "@data-fair/dev-server": "^2.5.0",
     "@data-fair/lib-types-builder": "^1.14.3",
     "@intlify/unplugin-vue-i18n": "^11.2.5",
     "@playwright/test": "^1.62.1",

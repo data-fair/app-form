@@ -26,6 +26,12 @@ export function buildApplication (configuration: Record<string, unknown>) {
   }
 }
 
+export function makeJwt (payload: Record<string, unknown>): string {
+  const b64url = (value: unknown) => btoa(JSON.stringify(value))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  return `${b64url({ alg: 'HS256', typ: 'JWT' })}.${b64url(payload)}.signature`
+}
+
 async function mockSimpleDirectory (page: Page) {
   await page.route('**/simple-directory/api/sites/_public.js', route => route.fulfill({
     contentType: 'application/javascript',
@@ -41,12 +47,7 @@ async function mockSimpleDirectory (page: Page) {
   }))
 }
 
-export const test = base.extend<{ application: unknown }>({
-  application: [
-    buildApplication({}),
-    { option: true }
-  ]
-})
+export const test = base
 
 export async function gotoApp (page: Page, application: unknown) {
   await mockSimpleDirectory(page)

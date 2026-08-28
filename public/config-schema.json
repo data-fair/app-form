@@ -9,9 +9,11 @@
       "properties": {
         "datasets": {
           "type": "array",
+          "minItems": 1,
           "items": [
             {
               "title": "Jeu de données",
+              "description": "Le jeu de données doit être éditable : les réponses soumises par les utilisateurs y seront ajoutées comme nouvelles lignes.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -45,7 +47,7 @@
               },
               "layout": {
                 "getItems": {
-                  "url": "api/v1/datasets?status=finalized&q={q}&select=title,schema,attachmentsAsImage,userPermissions&rest=true&owner={context.owner.type}:{context.owner.id}&size=100&sort=createdAt:-1",
+                  "url": "api/v1/datasets?status=finalized&q={q}&select=title,schema,attachmentsAsImage,userPermissions&rest=true&owner={context.owner.type}:{context.owner.id}&size=50&sort=createdAt:-1",
                   "itemKey": "data.href",
                   "itemTitle": "data.title",
                   "itemsResults": "data.results"
@@ -61,6 +63,7 @@
       "properties": {
         "density": {
           "title": "Densité",
+          "description": "Ajuste l'espacement entre les champs du formulaire.",
           "type": "string",
           "default": "default",
           "oneOf": [
@@ -76,10 +79,17 @@
               "const": "comfortable",
               "title": "Aérée"
             }
-          ]
+          ],
+          "layout": {
+            "cols": {
+              "xs": 12,
+              "sm": 6
+            }
+          }
         },
         "layout": {
           "title": "Rendu des groupes",
+          "description": "Manière de rendre les groupes de champs x-group du schéma du jeu de données. Sans groupe de champs, cette option n'a pas d'effet.",
           "type": "string",
           "default": "sections",
           "oneOf": [
@@ -103,10 +113,17 @@
               "const": "none",
               "title": "Aucun"
             }
-          ]
+          ],
+          "layout": {
+            "cols": {
+              "xs": 12,
+              "sm": 6
+            }
+          }
         },
         "groups": {
           "title": "Regroupement des champs x-group",
+          "description": "Regrouper ou non les champs partageant le même groupe x-group dans le schéma du jeu de données.",
           "type": "string",
           "default": "all",
           "oneOf": [
@@ -118,10 +135,17 @@
               "const": "none",
               "title": "Aucun"
             }
-          ]
+          ],
+          "layout": {
+            "cols": {
+              "xs": 12,
+              "sm": 6
+            }
+          }
         },
         "variant": {
           "title": "Style des éléments",
+          "description": "Style Vuetify appliqué aux champs de saisie du formulaire.",
           "type": "string",
           "default": "filled",
           "oneOf": [
@@ -153,10 +177,17 @@
               "const": "solo-filled",
               "title": "Solo rempli"
             }
-          ]
+          ],
+          "layout": {
+            "cols": {
+              "xs": 12,
+              "sm": 6
+            }
+          }
         },
         "submitMessage": {
           "title": "Message après envoi",
+          "description": "Message affiché à l'utilisateur après l'envoi réussi du formulaire.",
           "type": "string",
           "layout": "textarea",
           "default": "Merci, votre réponse a bien été enregistrée !"

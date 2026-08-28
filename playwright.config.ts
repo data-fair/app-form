@@ -1,7 +1,11 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const isUnitOnly = process.argv.includes('--project') &&
-  process.argv[process.argv.indexOf('--project') + 1] === 'unit'
+const projectValues = process.argv.flatMap((arg, i) => {
+  if (arg === '--project') return [process.argv[i + 1] ?? '']
+  const match = arg.match(/^--project=(.+)$/)
+  return match ? [match[1]] : []
+})
+const isUnitOnly = projectValues.length > 0 && projectValues.every(value => value === 'unit')
 
 const port = process.env.APP_FORM_E2E_PORT || 3000
 

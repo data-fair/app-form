@@ -2,18 +2,7 @@ import { ref, onMounted } from 'vue'
 import { ofetch } from 'ofetch'
 import { useConfig } from './config'
 import { useSession } from '@data-fair/lib-vue/session.js'
-
-function decodeJWT (token: string): Record<string, unknown> | null {
-  try {
-    const parts = token.split('.')
-    if (parts.length !== 3) return null
-    const payload = parts[1]!.replace(/-/g, '+').replace(/_/g, '/')
-    const json = atob(payload)
-    return JSON.parse(json)
-  } catch {
-    return null
-  }
-}
+import { decodeJWT, tokenDelayMs } from '@/utils/jwt'
 
 interface TokenState {
   token: ReturnType<typeof ref<string | null>>
@@ -48,17 +37,15 @@ async function doFetch (state: TokenState, directoryUrl: string) {
     state.token.value = fetchedToken
     const payload = decodeJWT(fetchedToken)
     const nbf = payload && typeof payload.nbf === 'number' ? payload.nbf : null
-    if (nbf) {
-      const delay = Math.max(0, nbf * 1000 - Date.now() + 500)
-      if (delay > 0) {
-        if (state.timeoutId) clearTimeout(state.timeoutId)
-        await new Promise<void>((resolve) => {
-          state.timeoutId = setTimeout(() => {
-            state.timeoutId = null
-            resolve()
-          }, delay)
-        })
-      }
+    const delay = tokenDelayMs(nbf)
+    if (delay > 0) {
+      if (state.timeoutId) clearTimeout(state.timeoutId)
+      await new Promise<void>((resolve) => {
+        state.timeoutId = setTimeout(() => {
+          state.timeoutId = null
+          resolve()
+        }, delay)
+      })
     }
   } catch (e) {
     console.error('Failed to fetch anonymous token', e)
