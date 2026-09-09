@@ -37,7 +37,7 @@
               },
               "layout": {
                 "getItems": {
-                  "url": "api/v1/datasets?status=finalized&q={q}&select=title,schema,attachmentsAsImage,userPermissions&rest=true&owner={context.owner.type}:{context.owner.id}&size=50&sort=createdAt:-1",
+                  "url": "api/v1/datasets?status=finalized&q={q}&select=title,schema,attachmentsAsImage,userPermissions&rest=true&owner={context.owner.type}:{context.owner.id}&size=100",
                   "itemKey": "data.href",
                   "itemTitle": "data.title",
                   "itemsResults": "data.results"
