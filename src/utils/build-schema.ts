@@ -15,8 +15,8 @@ export function buildSchema (source: VJSFSchema, options: BuildSchemaOptions = {
   const schema: VJSFSchema = JSON.parse(JSON.stringify(source))
   const { layout = 'sections', groups = 'all', attachmentsAsImage } = options
 
-  // On identifie le champ pièce jointe avant le repli de titres : sinon la
-  // branche par défaut « Image / Document numérique attaché » est inatteignable.
+  // The attachment field is identified before the title fallback: otherwise the
+  // default « Image / Document numérique attaché » branch is unreachable.
   const attachmentEntry = Object.entries(schema.properties ?? {}).find(([, f]) => (f as VJSFProperty)['x-concept']?.id === 'attachment')
 
   Object.entries(schema.properties ?? {}).forEach(([key, value]) => {
@@ -51,15 +51,15 @@ export function buildSchema (source: VJSFSchema, options: BuildSchemaOptions = {
       }
     }
     if (Object.values(groupsMap).length) {
-      // 'sections' n'existe pas dans le registre des composants de vjsf 4
-      // (seul 'section' est valide) : on traduit la valeur de config historique.
+      // 'sections' does not exist in the vjsf 4 component registry
+      // (only 'section' is valid): the legacy config value is translated.
       const layoutConfig = layout ?? 'sections'
       const layoutValue = layoutConfig === 'sections' ? 'section' : layoutConfig
       schema.layout = layoutValue
       const sections: Array<{ title: string; properties: Record<string, VJSFProperty> }> =
         Object.entries(groupsMap).map(([title, properties]) => ({ title, properties }))
-      // En mode onglets/accordéon, un bloc de champs sans titre rendrait
-      // un onglet vide : on le transforme en section titrée.
+      // In tabs/accordion mode, a block of fields without a title would render
+      // an empty tab: it is turned into a titled section.
       if (Object.values(properties).length && ['tabs', 'vertical-tabs', 'expansion-panels'].includes(layoutValue)) {
         sections.push({ title: 'Autres champs', properties })
         delete schema.properties

@@ -17,12 +17,12 @@ import { createConfig } from '@/composables/config'
 // BEFORE createApp().
 window.vIframeOptions = { reactiveParams: reactiveSearchParams }
 
-// createI18n DOIT être créé au niveau module (pas dans init()) :
-// plusieurs composants de @data-fair/lib-vuetify (ui-notif, colors-preview,
-// layout-empty-state, layout-fetch-error, ...) appellent useI18n() à
-// l'évaluation du module. Si la création est différée, ces modules reçoivent
-// une instance i18n non initialisée et les traductions de la lib ne
-// fonctionnent pas (snackbar, empty state, page d'erreur).
+// createI18n MUST be created at module level (not in init()):
+// several @data-fair/lib-vuetify components (ui-notif, colors-preview,
+// layout-empty-state, layout-fetch-error, ...) call useI18n() when the
+// module is evaluated. If the creation is deferred, these modules get
+// an uninitialized i18n instance and the lib translations do not
+// work (snackbar, empty state, error page).
 const i18n = createI18n({ legacy: false, locale: 'fr', fallbackLocale: 'en' })
 
 async function init () {
@@ -44,7 +44,7 @@ async function init () {
 
 init().catch((e) => {
   console.error('Failed to initialize app', e)
-  // Débloque le service de capture même en cas d'échec d'initialisation
-  // (sinon chaque capture attend le délai complet de df:capture-delay).
+  // Unblocks the capture service even when the initialization fails
+  // (otherwise each capture waits for the full df:capture-delay).
   window.triggerCapture?.()
 })

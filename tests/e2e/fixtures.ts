@@ -1,4 +1,5 @@
-import { test as base, type Page } from '@playwright/test'
+import type { Page } from '@playwright/test'
+import { test as base } from '@playwright/test'
 
 const SITE_INFO = {
   main: {},

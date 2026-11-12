@@ -1,8 +1,9 @@
-import reactiveSearchParams from '@data-fair/lib-vue/reactive-search-params-global.js'
-import { computed, inject, ref, type App, type Ref, type ComputedRef } from 'vue'
+import type { App, Ref, ComputedRef } from 'vue'
 import type { Application } from '@data-fair/lib-common-types/application/index.js'
-import createDFrameAdapter from '@data-fair/frame/lib/vue-reactive/state-change-adapter.js'
 import type { AppConfig, DatasetConfig } from '@/types'
+import reactiveSearchParams from '@data-fair/lib-vue/reactive-search-params-global.js'
+import { computed, inject, ref } from 'vue'
+import createDFrameAdapter from '@data-fair/frame/lib/vue-reactive/state-change-adapter.js'
 
 export interface ConfigState {
   application: Application & { href: string }

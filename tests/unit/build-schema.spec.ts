@@ -1,6 +1,6 @@
+import type { VJSFSchema } from '../../src/types'
 import { test, expect } from '@playwright/test'
 import { buildSchema } from '../../src/utils/build-schema'
-import type { VJSFSchema } from '../../src/types'
 
 const flatSchema: VJSFSchema = {
   type: 'object',
@@ -28,20 +28,20 @@ const attachmentSchema: VJSFSchema = {
   }
 }
 
-test('utilise la clé technique comme titre quand le champ n\'en a pas', () => {
+test('uses the technical key as title when the field has none', () => {
   const { schema } = buildSchema(flatSchema)
   expect(schema.properties?.nom.title).toBe('nom')
   expect(schema.properties?.age.title).toBe('Âge')
 })
 
-test('laisse un schéma sans groupe x-group à plat', () => {
+test('leaves a schema without x-group groups flat', () => {
   const { schema } = buildSchema(flatSchema, { layout: 'sections' })
   expect(schema.layout).toBeUndefined()
   expect(schema.allOf).toBeUndefined()
   expect(Object.keys(schema.properties ?? {})).toEqual(['nom', 'age'])
 })
 
-test('regroupe les champs x-group et traduit la valeur historique sections en section', () => {
+test('groups the x-group fields and translates the legacy value sections to section', () => {
   const { schema } = buildSchema(groupedSchema, { layout: 'sections' })
   expect(schema.layout).toBe('section')
   expect(schema.allOf).toEqual([
@@ -51,27 +51,27 @@ test('regroupe les champs x-group et traduit la valeur historique sections en se
   expect(schema.properties).toEqual({ c: { type: 'string', title: 'C' } })
 })
 
-test('en mode onglets, les champs hors groupe forment une section Autres champs', () => {
+test('in tabs mode, the ungrouped fields form an Autres champs section', () => {
   const { schema } = buildSchema(groupedSchema, { layout: 'tabs' })
   expect(schema.layout).toBe('tabs')
   expect(schema.allOf?.map(s => s.title)).toEqual(['Identité', 'Coordonnées', 'Autres champs'])
   expect(schema.properties).toBeUndefined()
 })
 
-test('groups=none désactive le regroupement', () => {
+test('groups=none disables grouping', () => {
   const { schema } = buildSchema(groupedSchema, { layout: 'tabs', groups: 'none' })
   expect(schema.allOf).toBeUndefined()
   expect(Object.keys(schema.properties ?? {})).toEqual(['a', 'b', 'c'])
 })
 
-test('layout=none conserve le schéma d\'origine', () => {
+test('layout=none keeps the original schema', () => {
   const { schema } = buildSchema(groupedSchema, { layout: 'none' })
   expect(schema.allOf).toBeUndefined()
   expect(schema.layout).toBeUndefined()
   expect(Object.keys(schema.properties ?? {})).toEqual(['a', 'b', 'c'])
 })
 
-test('remplace le champ concept attachment par un champ __file en file-input', () => {
+test('replaces the attachment concept field with a __file file-input field', () => {
   const { schema, attachmentKey } = buildSchema(attachmentSchema, { attachmentsAsImage: true, layout: 'none' })
   expect(attachmentKey).toBe('photo')
   expect(schema.properties?.photo).toBeUndefined()
@@ -83,13 +83,13 @@ test('remplace le champ concept attachment par un champ __file en file-input', (
   })
 })
 
-test('titre du champ pièce jointe : valeur par défaut selon attachmentsAsImage', () => {
+test('attachment field title: default value depending on attachmentsAsImage', () => {
   const withoutImage = buildSchema(attachmentSchema, { layout: 'none' })
   expect(withoutImage.attachmentKey).toBe('photo')
   expect(withoutImage.schema.properties?.__file?.title).toBe('Document numérique attaché')
 })
 
-test('conserve le titre d\'origine du champ pièce jointe s\'il existe', () => {
+test('keeps the original title of the attachment field if there is one', () => {
   const titled: VJSFSchema = {
     type: 'object',
     properties: { doc: { type: 'object', title: 'Ma photo', 'x-concept': { id: 'attachment' } } }
@@ -98,7 +98,7 @@ test('conserve le titre d\'origine du champ pièce jointe s\'il existe', () => {
   expect(schema.properties?.__file?.title).toBe('Ma photo')
 })
 
-test('ne mute pas le schéma source', () => {
+test('does not mutate the source schema', () => {
   const source: VJSFSchema = JSON.parse(JSON.stringify(groupedSchema))
   const before = JSON.parse(JSON.stringify(source))
   buildSchema(source, { layout: 'tabs', attachmentsAsImage: true })

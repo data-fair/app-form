@@ -1,15 +1,15 @@
 import { expect } from '@playwright/test'
 import { test, gotoApp, buildApplication } from './fixtures'
 
-test('affiche un état vide quand aucun jeu de données n\'est configuré', async ({ page }) => {
+test('displays an empty state when no dataset is configured', async ({ page }) => {
   const errors: string[] = []
   page.on('console', msg => { if (msg.type() === 'error') errors.push(`[console.error] ${msg.text()}`) })
   page.on('pageerror', err => errors.push(`[pageerror] ${err.message}`))
   await gotoApp(page, buildApplication({}))
   await expect(page.locator('.v-empty-state')).toContainText('Configuration incomplète')
-  // En vite nu, le placeholder %APPLICATION% d'index.html n'est pas substitué :
-  // le script inline lève une SyntaxError attendue, l'APPLICATION injecté par
-  // addInitScript reste en place (df-dev-server substitue le placeholder en dev réel).
+  // With plain vite, the %APPLICATION% placeholder of index.html is not substituted:
+  // the inline script throws an expected SyntaxError, the APPLICATION injected by
+  // addInitScript stays in place (df-dev-server substitutes the placeholder in real dev).
   const expectedErrors = ["Unexpected token '%'"]
   expect(errors.filter(error => !expectedErrors.some(msg => error.includes(msg)))).toEqual([])
 })

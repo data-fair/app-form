@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { VJSFSchema } from '@/types'
 import { computed, nextTick, ref, watch } from 'vue'
 import Vjsf from '@koumoul/vjsf'
 import { v2compat } from '@koumoul/vjsf/compat/v2'
@@ -9,7 +10,6 @@ import { useConfig } from '@/composables/config'
 import { useAnonymousToken } from '@/composables/anonymous-token'
 import { useSession } from '@data-fair/lib-vue/session.js'
 import { buildSchema } from '@/utils/build-schema'
-import type { VJSFSchema } from '@/types'
 
 const { config, dataset, accessKey } = useConfig()
 const session = useSession()
@@ -43,10 +43,10 @@ watch(rawV2Schema, (v) => {
   rebuildSchema()
 }, { immediate: true })
 
-// Débloque le service de capture dès que le formulaire est réellement rendu
-// (sinon chaque capture attend le délai complet de df:capture-delay).
-// Capture en image fixe (pas d'animation) : le formulaire n'a pas de rendu
-// animé, et un mode gif exigerait de définir window.animateCaptureFrame.
+// Unblocks the capture service as soon as the form is actually rendered
+// (otherwise each capture waits for the full df:capture-delay).
+// Still image capture (no animation): the form has no animated rendering,
+// and a gif mode would require defining window.animateCaptureFrame.
 watch(schema, (v) => {
   if (!v) return
   nextTick(() => window.triggerCapture?.())

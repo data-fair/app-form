@@ -1,4 +1,5 @@
-import { expect, type Page } from '@playwright/test'
+import type { Page } from '@playwright/test'
+import { expect } from '@playwright/test'
 import { test, gotoApp, buildApplication, makeJwt } from './fixtures'
 
 const formSchema = {
@@ -38,7 +39,7 @@ async function mockDatasetRoutes (page: Page) {
   await page.route('**/lines', route => route.fulfill({ status: 201 }))
 }
 
-test('saisit et soumet le formulaire vers POST /lines', async ({ page }) => {
+test('fills in and submits the form to POST /lines', async ({ page }) => {
   test.slow()
   await mockDatasetRoutes(page)
   const linesRequests: { headers: Record<string, string>; body: string }[] = []
@@ -51,8 +52,8 @@ test('saisit et soumet le formulaire vers POST /lines', async ({ page }) => {
 
   const button = page.getByRole('button', { name: 'Envoyer' })
   const nom = page.getByLabel('Nom')
-  // Premier test à toucher le serveur vite : l'optimisation à froid des
-  // dépendances (vjsf) peut dépasser le timeout par défaut des assertions.
+  // First test to hit the vite server: the cold optimization of the
+  // dependencies (vjsf) can exceed the default assertion timeout.
   await expect(nom).toBeVisible({ timeout: 30_000 })
   await expect(button).toBeDisabled()
   await nom.fill('Alice Martin')
@@ -67,7 +68,7 @@ test('saisit et soumet le formulaire vers POST /lines', async ({ page }) => {
   expect(request.body).toContain('"age":null')
 })
 
-test('récupère un jeton anonyme quand l\'app est ouverte par lien partagé', async ({ page }) => {
+test('gets an anonymous token when the app is opened through a shared link', async ({ page }) => {
   await mockDatasetRoutes(page)
   const token = makeJwt({ nbf: Math.floor(Date.now() / 1000) - 60 })
   await page.route('**/simple-directory/api/auth/anonymous-action', route => route.fulfill({
