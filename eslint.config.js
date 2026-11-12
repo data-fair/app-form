@@ -17,7 +17,13 @@ export default [
       'vue/multi-word-component-names': 'off',
       'vue/require-default-prop': 'off',
       'vue/no-v-html': 'off',
-      'no-undef': 'off' // typescript s'en charge
+      'no-undef': 'off', // typescript s'en charge
+      // mdi-svg iconset: an mdi-* string renders an empty icon, without any error
+      'vue/no-restricted-static-attribute': ['error', {
+        key: '/^((prepend|append)-(inner-)?)?icon$|-icon$/',
+        value: '/^mdi-/',
+        message: 'mdi-svg iconset: import the path from @mdi/js instead of an mdi-* string.'
+      }]
     }
   },
   {
