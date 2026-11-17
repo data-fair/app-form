@@ -90,3 +90,12 @@ test('gets an anonymous token when the app is opened through a shared link', asy
   expect(linesRequests).toHaveLength(1)
   expect(linesRequests[0].headers['x-anonymoustoken']).toBe(token)
 })
+
+test('does not flag a pristine form with validation errors', async ({ page }) => {
+  await mockDatasetRoutes(page)
+  await gotoApp(page, formApplication())
+  await expect(page.getByLabel('Nom')).toBeVisible({ timeout: 30_000 })
+  // initialValidation keeps its vjsf default ('withData'): empty required fields are not in error
+  await expect(page.locator('.v-field--error')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Envoyer' })).toBeDisabled()
+})

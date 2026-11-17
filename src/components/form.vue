@@ -68,8 +68,7 @@ const options = computed(() => ({
   density: config.value.density,
   titleDepth: 3,
   locale: session.lang.value,
-  removeAdditional: true,
-  initialValidation: 'always'
+  removeAdditional: true
 }))
 
 const data = ref<Record<string, unknown>>({})
