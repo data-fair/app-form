@@ -28,6 +28,27 @@ const attachmentSchema: VJSFSchema = {
   }
 }
 
+const labelsSchema: VJSFSchema = {
+  type: 'object',
+  properties: {
+    participation: { type: 'string', title: 'Présence', 'x-labels': { oui: 'Oui', non: 'Non' }, 'x-labelsRestricted': true },
+    ouvert: { type: 'string', 'x-labels': { a: 'A', b: 'B' } },
+    dejaEnumere: { type: 'string', 'x-labels': { a: 'A' }, 'x-labelsRestricted': true, enum: ['a'] },
+    codeEntier: { type: 'integer', 'x-labels': { 1: 'Un', 2: 'Deux' }, 'x-labelsRestricted': true }
+  }
+}
+
+test('builds a select from a restricted x-labels list, and only in that case', () => {
+  const { schema } = buildSchema(labelsSchema)
+  expect(schema.properties?.participation.oneOf).toEqual([{ const: 'oui', title: 'Oui' }, { const: 'non', title: 'Non' }])
+  // open list: the values live in the lines, the app has no permission to read them
+  expect(schema.properties?.ouvert.oneOf).toBeUndefined()
+  // an existing enum is already rendered as a select
+  expect(schema.properties?.dejaEnumere.oneOf).toBeUndefined()
+  // a const string in an integer column would be refused by the line validation
+  expect(schema.properties?.codeEntier.oneOf).toBeUndefined()
+})
+
 test('uses the technical key as title when the field has none', () => {
   const { schema } = buildSchema(flatSchema)
   expect(schema.properties?.nom.title).toBe('nom')

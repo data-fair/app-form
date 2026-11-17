@@ -25,6 +25,14 @@ export function buildSchema (source: VJSFSchema, options: BuildSchemaOptions = {
     if (!v.title) v.title = key
   })
 
+  // A closed list of allowed values is declared with x-labelsRestricted (x-labels maps each allowed
+  // value to its label). The safe schema served by data-fair withholds the enums, but it keeps these
+  // owner-declared labels: oneOf is the shape vjsf renders as a select.
+  for (const prop of Object.values(schema.properties ?? {}) as VJSFProperty[]) {
+    if (prop.type !== 'string' || !prop['x-labelsRestricted'] || !prop['x-labels'] || prop.enum || prop.oneOf) continue
+    prop.oneOf = Object.entries(prop['x-labels']).map(([allowedValue, label]) => ({ const: allowedValue, title: label }))
+  }
+
   let attachmentKey: string | null = null
   if (attachmentEntry) {
     attachmentKey = attachmentEntry[0]

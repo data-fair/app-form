@@ -99,3 +99,34 @@ test('does not flag a pristine form with validation errors', async ({ page }) =>
   await expect(page.locator('.v-field--error')).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Envoyer' })).toBeDisabled()
 })
+
+const labelsFormSchema = {
+  type: 'object',
+  properties: {
+    participation: { type: 'string', title: 'Présence', 'x-labels': { oui: 'Oui', non: 'Non' }, 'x-labelsRestricted': true }
+  }
+}
+
+test('renders a restricted x-labels list as a select and submits the value, not the label', async ({ page }) => {
+  await page.route('**/safe-schema**', route => route.fulfill({
+    contentType: 'application/schema+json',
+    body: JSON.stringify(labelsFormSchema)
+  }))
+  await page.route('**/lines', route => route.fulfill({ status: 201 }))
+  let linesBody = ''
+  page.on('request', request => {
+    if (request.url().includes('/lines')) linesBody = request.postData() ?? ''
+  })
+  await gotoApp(page, formApplication())
+
+  const select = page.getByRole('combobox', { name: 'Présence' })
+  await expect(select).toBeVisible({ timeout: 30_000 })
+  // the inner input is behind the Vuetify field wrapper: opening the list from the keyboard
+  // keeps the test independent from the wrapper markup
+  await select.press('ArrowDown')
+  await page.getByRole('option', { name: 'Oui' }).click()
+  await page.getByRole('button', { name: 'Envoyer' }).click()
+
+  await expect(page.getByText('Merci pour votre participation !')).toBeVisible()
+  expect(linesBody).toContain('"participation":"oui"')
+})
