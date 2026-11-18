@@ -1,5 +1,6 @@
 import type { Field } from '@data-fair/lib-common-types/application/index.js'
-import type { Densite, RegroupementDesChampsXGroup, RenduDesGroupes, StyleDesElements } from './config/index.js'
+// indexed by property, not by the type names json-schema-to-typescript derives from the titles
+import type { Config } from './config/index.js'
 
 export interface VJSFProperty {
   title?: string
@@ -29,7 +30,7 @@ export interface VJSFSchema {
   title?: string
   type?: string | string[]
   properties?: Record<string, VJSFProperty>
-  allOf?: Array<{ title?: string; properties?: Record<string, VJSFProperty> }>
+  allOf?: Array<{ title?: string; properties?: Record<string, VJSFProperty>; required?: string[] }>
   layout?: string
   required?: string[]
   [key: string]: unknown
@@ -50,10 +51,10 @@ export interface DatasetConfig {
 
 export interface AppConfig {
   datasets?: DatasetConfig[]
-  density?: Densite
-  layout?: RenduDesGroupes
-  variant?: StyleDesElements
-  groups?: RegroupementDesChampsXGroup
+  density?: Config['density']
+  layout?: Config['layout']
+  variant?: Config['variant']
+  groups?: Config['groups']
   submitMessage?: string
   [key: string]: unknown
 }

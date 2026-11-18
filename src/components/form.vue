@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import type { VJSFSchema } from '@/types'
-import { computed, nextTick, ref, watch } from 'vue'
+import type { VForm } from 'vuetify/components'
+import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import Vjsf from '@koumoul/vjsf'
 import { v2compat } from '@koumoul/vjsf/compat/v2'
 import { ofetch } from 'ofetch'
+import { useI18n } from 'vue-i18n'
 import { useFetch } from '@data-fair/lib-vue/fetch.js'
+import { useUiNotif } from '@data-fair/lib-vue/ui-notif.js'
 import { useAsyncAction } from '@data-fair/lib-vue/async-action.js'
 import { useConfig } from '@/composables/config'
 import { useAnonymousToken } from '@/composables/anonymous-token'
 import { useSession } from '@data-fair/lib-vue/session.js'
 import { buildSchema } from '@/utils/build-schema'
 
+const { t } = useI18n()
 const { config, dataset, accessKey } = useConfig()
 const session = useSession()
 const { token, tokenReady, reset: resetToken } = useAnonymousToken('lines')
@@ -18,7 +22,9 @@ const { token, tokenReady, reset: resetToken } = useAnonymousToken('lines')
 const datasetUrl = computed(() => dataset.value?.href ?? '')
 const schemaUrl = computed(() => `${datasetUrl.value}/safe-schema?mimeType=application%2Fschema%2Bjson`)
 
-const { data: rawV2Schema, loading: schemaLoading, error: schemaError } = useFetch<unknown>(schemaUrl)
+const { sendUiNotif } = useUiNotif()
+// the default notification of useFetch only shows the raw API message
+const { data: rawV2Schema, loading: schemaLoading, error: schemaError } = useFetch<unknown>(schemaUrl, { notifError: false })
 
 const baseSchema = ref<VJSFSchema | null>(null)
 const schema = ref<VJSFSchema | null>(null)
@@ -54,6 +60,7 @@ watch(schema, (v) => {
 
 watch(schemaError, (e) => {
   if (!e) return
+  sendUiNotif({ type: 'error', msg: t('loadError'), error: e })
   window.triggerCapture?.()
 })
 
@@ -72,7 +79,9 @@ const options = computed(() => ({
 }))
 
 const data = ref<Record<string, unknown>>({})
-const valid = ref(false)
+const formRef = ref<VForm | null>(null)
+// the json-layout state, only used to apply a debounced input before validating
+const statefulLayout = shallowRef<{ applyDebouncedInput: () => void } | null>(null)
 const submitted = ref(false)
 
 async function buildFormData () {
@@ -111,63 +120,87 @@ const { execute: submit, loading: submitting } = useAsyncAction(
     submitted.value = true
     if (accessKey.value) resetToken()
   },
-  { error: 'Erreur lors de l\'envoi de la réponse' }
+  { error: t('submitError') }
 )
 
-function onSubmit () {
-  if (!valid.value) return
-  submit()
+// the button stays enabled on an invalid form, as in the portals contact form: a disabled
+// button tells nothing about what is missing and cannot be reached with the keyboard
+async function onSubmit () {
+  // a text input reaches the data 300 ms after the last keystroke (debounceInputMs): without this,
+  // typing the last field and clicking at once validates the previous value and sends nothing
+  statefulLayout.value?.applyDebouncedInput()
+  const result = await formRef.value?.validate()
+  if (result?.valid) {
+    submit()
+    return
+  }
+  // validate() reveals the errors of every field: focus the first one, which also scrolls to it
+  await nextTick()
+  const firstError = formRef.value?.$el.querySelector('.v-input--error input, .v-input--error textarea')
+  firstError?.focus()
 }
 </script>
 
 <template>
   <div>
-    <template v-if="schemaLoading">
-      <v-row
-        style="height:200px"
-        class="ma-0 align-center"
-      >
-        <v-col class="text-center">
-          <v-progress-circular
-            :size="60"
-            :width="5"
-            color="primary"
-            indeterminate
-          />
-        </v-col>
-      </v-row>
-    </template>
-    <template v-else-if="submitted">
-      <v-alert
-        type="success"
-        class="text-center ma-16"
-        :text="config.submitMessage || 'Merci, votre réponse a bien été enregistrée !'"
+    <div
+      v-if="schemaLoading"
+      class="d-flex justify-center align-center py-16"
+    >
+      <v-progress-circular
+        :size="60"
+        :width="5"
+        color="primary"
+        indeterminate
       />
-    </template>
+    </div>
+    <v-alert
+      v-else-if="submitted"
+      type="success"
+      class="my-4"
+      :text="config.submitMessage || t('submitted')"
+    />
     <template v-else-if="schema">
-      <v-form v-model="valid">
-        <v-defaults-provider :defaults="{ global: { variant: config.variant } }">
+      <v-form ref="formRef">
+        <!-- hide-details auto: no empty message row reserved under every field, errors still show -->
+        <v-defaults-provider :defaults="{ global: { variant: config.variant, hideDetails: 'auto' } }">
           <vjsf
             :key="schemaKey"
             v-model="data"
             :schema="schema"
             :options="options"
+            @update:state="(state: { applyDebouncedInput: () => void }) => statefulLayout = state"
           />
         </v-defaults-provider>
       </v-form>
-      <v-row>
-        <v-col class="text-center">
-          <v-btn
-            color="primary"
-            variant="elevated"
-            :loading="submitting || (accessKey !== null && !tokenReady)"
-            :disabled="!valid || submitting || (accessKey !== null && !tokenReady)"
-            @click="onSubmit"
-          >
-            Envoyer
-          </v-btn>
-        </v-col>
-      </v-row>
+      <!-- mousedown.prevent: the field keeps the focus until the click. Its blur would apply the
+           pending input and remove its error message, the button would move up under the pointer
+           and the click would be lost. onSubmit applies the pending input itself. -->
+      <div class="d-flex justify-center mt-4">
+        <v-btn
+          color="primary"
+          variant="elevated"
+          :loading="submitting || (accessKey !== null && !tokenReady)"
+          :disabled="submitting || (accessKey !== null && !tokenReady)"
+          @mousedown.prevent
+          @click="onSubmit"
+        >
+          {{ t('submit') }}
+        </v-btn>
+      </div>
     </template>
   </div>
 </template>
+
+<i18n lang="yaml">
+fr:
+  submit: Envoyer
+  submitted: Merci, votre réponse a bien été enregistrée !
+  submitError: Erreur lors de l'envoi de la réponse
+  loadError: Erreur lors du chargement du formulaire
+en:
+  submit: Send
+  submitted: Thank you, your answer has been recorded!
+  submitError: Error while sending the answer
+  loadError: Error while loading the form
+</i18n>

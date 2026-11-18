@@ -33,8 +33,10 @@ coverage
 # generated config types
 /src/config/.type/
 
-# local dev config
+# local dev state (df-dev-env, df-dev-server)
+.env
 .dev-config.json
+.dev-attachments
 
 # tests
 /tests/output/

@@ -1,11 +1,12 @@
 {
   "type": "object",
-  "required": [
-    "datasets"
+  "x-exports": [
+    "types"
   ],
+  "required": ["datasets"],
   "allOf": [
     {
-      "title": "Données",
+      "title": "Source de données",
       "properties": {
         "datasets": {
           "type": "array",
@@ -17,24 +18,12 @@
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "href": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                },
-                "title": {
-                  "type": "string"
-                },
-                "schema": {
-                  "type": "array"
-                },
-                "attachmentsAsImage": {
-                  "type": "boolean"
-                },
-                "userPermissions": {
-                  "type": "array"
-                },
+                "href": { "type": "string" },
+                "id": { "type": "string" },
+                "title": { "type": "string" },
+                "schema": { "type": "array" },
+                "attachmentsAsImage": { "type": "boolean" },
+                "userPermissions": { "type": "array" },
                 "applicationKeyPermissions": {
                   "type": "object",
                   "const": {
@@ -47,7 +36,8 @@
               },
               "layout": {
                 "getItems": {
-                  "url": "api/v1/datasets?status=finalized&q={q}&select=title,schema,attachmentsAsImage,userPermissions&rest=true&owner={context.owner.type}:{context.owner.id}&size=100",
+                  "url": "api/v1/datasets?status=finalized&select=title,schema,attachmentsAsImage,userPermissions&rest=true&owner=${context.owner.type}:${context.owner.id}&size=50",
+                  "qSearchParam": "q",
                   "itemKey": "data.href",
                   "itemTitle": "data.title",
                   "itemsResults": "data.results"
@@ -63,85 +53,40 @@
       "properties": {
         "density": {
           "title": "Densité",
-          "description": "Ajuste l'espacement entre les champs du formulaire.",
+          "description": "Hauteur et espacement des champs du formulaire. Ne change pas la taille du texte.",
           "type": "string",
           "default": "default",
           "oneOf": [
-            {
-              "const": "default",
-              "title": "Normale"
-            },
-            {
-              "const": "compact",
-              "title": "Compacte"
-            },
-            {
-              "const": "comfortable",
-              "title": "Aérée"
-            }
+            { "const": "default", "title": "Aérée" },
+            { "const": "comfortable", "title": "Normale" },
+            { "const": "compact", "title": "Compacte" }
           ],
-          "layout": {
-            "cols": {
-              "xs": 12,
-              "sm": 6
-            }
-          }
+          "layout": { "cols": { "xs": 12, "sm": 6 } }
         },
         "layout": {
           "title": "Rendu des groupes",
-          "description": "Manière de rendre les groupes de champs x-group du schéma du jeu de données. Sans groupe de champs, cette option n'a pas d'effet.",
+          "description": "Manière d'afficher les groupes de champs définis dans le schéma du jeu de données. Sans groupe, cette option n'a pas d'effet.",
           "type": "string",
           "default": "sections",
           "oneOf": [
-            {
-              "const": "sections",
-              "title": "Sections"
-            },
-            {
-              "const": "tabs",
-              "title": "Onglets"
-            },
-            {
-              "const": "vertical-tabs",
-              "title": "Onglets empilés"
-            },
-            {
-              "const": "expansion-panels",
-              "title": "Accordéon"
-            },
-            {
-              "const": "none",
-              "title": "Aucun"
-            }
+            { "const": "sections", "title": "Sections" },
+            { "const": "tabs", "title": "Onglets" },
+            { "const": "vertical-tabs", "title": "Onglets empilés" },
+            { "const": "expansion-panels", "title": "Accordéon" },
+            { "const": "none", "title": "Aucun" }
           ],
-          "layout": {
-            "cols": {
-              "xs": 12,
-              "sm": 6
-            }
-          }
+          "layout": { "cols": { "xs": 12, "sm": 6 } }
         },
         "groups": {
-          "title": "Regroupement des champs x-group",
-          "description": "Regrouper ou non les champs partageant le même groupe x-group dans le schéma du jeu de données.",
+          "title": "Regroupement des champs",
+          "description": "Avec « Par groupe », toutes les colonnes d'un même groupe sont réunies dans un bloc qui porte le nom du groupe, même si elles ne se suivent pas dans le schéma du jeu de données. Les colonnes sans groupe restent en dehors de ces blocs. Avec « Ordre des colonnes », les champs suivent l'ordre du schéma et les groupes sont ignorés.",
           "type": "string",
           "default": "all",
           "oneOf": [
-            {
-              "const": "all",
-              "title": "Tous"
-            },
-            {
-              "const": "none",
-              "title": "Aucun"
-            }
+            { "const": "all", "title": "Par groupe" },
+            { "const": "none", "title": "Ordre des colonnes" }
           ],
-          "layout": {
-            "cols": {
-              "xs": 12,
-              "sm": 6
-            }
-          }
+          "layout": { "cols": { "xs": 12, "sm": 6 } }
         },
         "variant": {
           "title": "Style des éléments",
@@ -149,41 +94,15 @@
           "type": "string",
           "default": "filled",
           "oneOf": [
-            {
-              "const": "outlined",
-              "title": "Bordure"
-            },
-            {
-              "const": "plain",
-              "title": "Rien"
-            },
-            {
-              "const": "underlined",
-              "title": "Souligné"
-            },
-            {
-              "const": "filled",
-              "title": "Rempli"
-            },
-            {
-              "const": "solo",
-              "title": "Solo"
-            },
-            {
-              "const": "solo-inverted",
-              "title": "Solo inversé"
-            },
-            {
-              "const": "solo-filled",
-              "title": "Solo rempli"
-            }
+            { "const": "outlined", "title": "Bordure" },
+            { "const": "plain", "title": "Rien" },
+            { "const": "underlined", "title": "Souligné" },
+            { "const": "filled", "title": "Rempli" },
+            { "const": "solo", "title": "Solo" },
+            { "const": "solo-inverted", "title": "Solo inversé" },
+            { "const": "solo-filled", "title": "Solo rempli" }
           ],
-          "layout": {
-            "cols": {
-              "xs": 12,
-              "sm": 6
-            }
-          }
+          "layout": { "cols": { "xs": 12, "sm": 6 } }
         },
         "submitMessage": {
           "title": "Message après envoi",
@@ -194,6 +113,5 @@
         }
       }
     }
-  ],
-  "$id": "config-resolved"
+  ]
 }

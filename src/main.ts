@@ -17,17 +17,15 @@ import { createConfig } from '@/composables/config'
 // BEFORE createApp().
 window.vIframeOptions = { reactiveParams: reactiveSearchParams }
 
-// createI18n MUST be created at module level (not in init()):
-// several @data-fair/lib-vuetify components (ui-notif, colors-preview,
-// layout-empty-state, layout-fetch-error, ...) call useI18n() when the
-// module is evaluated. If the creation is deferred, these modules get
-// an uninitialized i18n instance and the lib translations do not
-// work (snackbar, empty state, error page).
-const i18n = createI18n({ legacy: false, locale: 'fr', fallbackLocale: 'en' })
-
 async function init () {
-  const session = await createSession({ directoryUrl: '/simple-directory' })
-  i18n.global.locale.value = session.lang.value
+  const session = await createSession({
+    directoryUrl: '/simple-directory',
+    // _public.js (index.html) sets the site info without a request, the fetch is only a fallback
+    siteInfo: !window.__PUBLIC_SITE_INFO
+  })
+  // created once the session is known: the locale is never reassigned afterwards
+  // (a language change reloads the document)
+  const i18n = createI18n({ legacy: false, locale: session.lang.value, fallbackLocale: 'en' })
   const app = createApp(App)
   app.use(createLocaleDayjs(session.lang.value))
   const vuetifyOptions = vuetifySessionOptions(session)

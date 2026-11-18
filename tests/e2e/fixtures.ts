@@ -1,5 +1,32 @@
-import type { Page } from '@playwright/test'
-import { test as base } from '@playwright/test'
+// tests/e2e/fixtures.ts — shared base of the e2e suite: console guard, session and site
+// mocks, injection of window.APPLICATION. Specs import `test` and `expect` from here,
+// never from '@playwright/test', so that the console guard applies to every test.
+import { test as base, expect, type Page } from '@playwright/test'
+
+export const test = base.extend<{ consoleGuard: void, expectedConsole: string[] }>({
+  // messages (console or page errors) a test provokes on purpose (a failing request), named one by one:
+  //   test.use({ expectedConsole: ['status of 500'] })
+  // substrings, not RegExp: fixture options are serialized and a RegExp would not survive
+  expectedConsole: [[], { option: true }],
+  consoleGuard: [async ({ page, expectedConsole }, use) => {
+    const messages: string[] = []
+    page.on('console', (msg) => {
+      if (msg.type() !== 'error' && msg.type() !== 'warning') return
+      if (expectedConsole.some(text => msg.text().includes(text))) return
+      messages.push(`[${msg.type()}] ${msg.text()}`)
+    })
+    page.on('pageerror', (err) => {
+      if (expectedConsole.some(text => err.message.includes(text))) return
+      // harness artifact: Vite serves index.html raw, the inline `window.APPLICATION=%APPLICATION%`
+      // fails to parse and gotoApp has already defined window.APPLICATION
+      if (err.message === "Unexpected token '%'") return
+      messages.push(`[pageerror] ${err.message}`)
+    })
+    await use()
+    expect(messages, 'console must stay clean').toEqual([])
+  }, { auto: true }]
+})
+export { expect }
 
 const SITE_INFO = {
   main: {},
@@ -48,8 +75,6 @@ async function mockSimpleDirectory (page: Page) {
   }))
 }
 
-export const test = base
-
 export async function gotoApp (page: Page, application: unknown) {
   await mockSimpleDirectory(page)
   await page.addInitScript((app) => {
@@ -59,5 +84,5 @@ export async function gotoApp (page: Page, application: unknown) {
       configurable: true
     })
   }, application)
-  await page.goto('/')
+  await page.goto('/app/')
 }

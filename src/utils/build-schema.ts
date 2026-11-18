@@ -45,6 +45,11 @@ export function buildSchema (source: VJSFSchema, options: BuildSchemaOptions = {
     }
     const g = (attachmentEntry[1] as VJSFProperty)['x-group']
     if (g) schema.properties.__file['x-group'] = g
+    // a required attachment column requires the input that replaces it,
+    // otherwise the error targets a property no field renders
+    if (schema.required?.includes(attachmentKey)) {
+      schema.required = schema.required.map(key => key === attachmentKey ? '__file' : key)
+    }
   }
 
   if (layout !== 'none') {
@@ -64,17 +69,28 @@ export function buildSchema (source: VJSFSchema, options: BuildSchemaOptions = {
       const layoutConfig = layout ?? 'sections'
       const layoutValue = layoutConfig === 'sections' ? 'section' : layoutConfig
       schema.layout = layoutValue
-      const sections: Array<{ title: string; properties: Record<string, VJSFProperty> }> =
-        Object.entries(groupsMap).map(([title, properties]) => ({ title, properties }))
+      // json-layout only attaches its « information obligatoire » message to a property declared
+      // in the same object as its `required` list: each section carries the keys of its own fields,
+      // otherwise a grouped field gets the raw Ajv message (« requiert la propriété nom »)
+      const required = new Set(schema.required ?? [])
+      const section = (title: string, properties: Record<string, VJSFProperty>) => {
+        const sectionRequired = Object.keys(properties).filter(key => required.has(key))
+        sectionRequired.forEach(key => required.delete(key))
+        return sectionRequired.length ? { title, properties, required: sectionRequired } : { title, properties }
+      }
+      const sections: Array<{ title: string; properties: Record<string, VJSFProperty>; required?: string[] }> =
+        Object.entries(groupsMap).map(([title, properties]) => section(title, properties))
       // In tabs/accordion mode, a block of fields without a title would render
       // an empty tab: it is turned into a titled section.
       if (Object.values(properties).length && ['tabs', 'vertical-tabs', 'expansion-panels'].includes(layoutValue)) {
-        sections.push({ title: 'Autres champs', properties })
+        sections.push(section('Autres champs', properties))
         delete schema.properties
       } else {
         schema.properties = properties
       }
       schema.allOf = sections
+      if (required.size) schema.required = [...required]
+      else delete schema.required
     } else if (Object.values(properties).length) {
       schema.properties = properties
     } else {

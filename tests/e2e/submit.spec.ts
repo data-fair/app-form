@@ -1,6 +1,5 @@
 import type { Page } from '@playwright/test'
-import { expect } from '@playwright/test'
-import { test, gotoApp, buildApplication, makeJwt } from './fixtures'
+import { test, expect, gotoApp, buildApplication, makeJwt } from './fixtures'
 
 const formSchema = {
   type: 'object',
@@ -55,7 +54,13 @@ test('fills in and submits the form to POST /lines', async ({ page }) => {
   // First test to hit the vite server: the cold optimization of the
   // dependencies (vjsf) can exceed the default assertion timeout.
   await expect(nom).toBeVisible({ timeout: 30_000 })
-  await expect(button).toBeDisabled()
+  // the button stays enabled on an invalid form: a click reveals what is missing, sends nothing,
+  // and moves the focus to the first field in error
+  await expect(button).toBeEnabled()
+  await button.click()
+  await expect(page.getByText('Information obligatoire')).toBeVisible()
+  await expect(nom).toBeFocused()
+  expect(linesRequests).toHaveLength(0)
   await nom.fill('Alice Martin')
   await button.click()
 
@@ -97,7 +102,7 @@ test('does not flag a pristine form with validation errors', async ({ page }) =>
   await expect(page.getByLabel('Nom')).toBeVisible({ timeout: 30_000 })
   // initialValidation keeps its vjsf default ('withData'): empty required fields are not in error
   await expect(page.locator('.v-field--error')).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Envoyer' })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Envoyer' })).toBeEnabled()
 })
 
 const labelsFormSchema = {
@@ -129,4 +134,42 @@ test('renders a restricted x-labels list as a select and submits the value, not 
 
   await expect(page.getByText('Merci pour votre participation !')).toBeVisible()
   expect(linesBody).toContain('"participation":"oui"')
+})
+
+test('shows the required message on a field moved into a group section', async ({ page }) => {
+  await page.route('**/safe-schema**', route => route.fulfill({
+    contentType: 'application/schema+json',
+    body: JSON.stringify({
+      type: 'object',
+      required: ['nom'],
+      properties: {
+        nom: { type: 'string', title: 'Nom', 'x-group': 'Votre identité' },
+        commentaire: { type: 'string', title: 'Commentaire' }
+      }
+    })
+  }))
+  const application = formApplication()
+  ;(application.configuration as Record<string, unknown>).layout = 'sections'
+  await gotoApp(page, application)
+
+  await expect(page.getByRole('heading', { name: 'Votre identité' })).toBeVisible({ timeout: 30_000 })
+  await page.getByRole('button', { name: 'Envoyer' }).click()
+  await expect(page.getByText('Information obligatoire')).toBeVisible()
+  await expect(page.getByText('requiert la propriété')).toHaveCount(0)
+})
+
+test.describe('schema loading error', () => {
+  // the 403 is provoked on purpose, the browser logs the failed request
+  test.use({ expectedConsole: ['status of 403'] })
+
+  test('notifies a readable error when the schema cannot be loaded', async ({ page }) => {
+    await page.route('**/safe-schema**', route => route.fulfill({
+      status: 403,
+      contentType: 'text/plain',
+      body: 'Permission manquante pour l\'opération "readSafeSchema" ou la catégorie "read".'
+    }))
+    await gotoApp(page, formApplication())
+
+    await expect(page.getByText('Erreur lors du chargement du formulaire')).toBeVisible({ timeout: 30_000 })
+  })
 })

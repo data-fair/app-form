@@ -12,11 +12,13 @@ npm install
 
 ## Development Server
 
-Start the development server on `http://localhost:3000`
+Start the development environment (Vite and the data-fair dev server in a zellij layout):
 
 ```bash
 npm run dev
 ```
+
+The ports are drawn once by `df-dev-env` and stored in a git-ignored `.env` (`APP_PORT`, `DEV_SERVER_PORT`, `E2E_PORT`), so that several applications can run side by side. The dev server URL is shown at the bottom of the layout.
 
 ## Production
 

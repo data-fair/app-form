@@ -125,3 +125,41 @@ test('does not mutate the source schema', () => {
   buildSchema(source, { layout: 'tabs', attachmentsAsImage: true })
   expect(source).toEqual(before)
 })
+
+// json-layout only attaches its « information obligatoire » message to a property declared in the
+// same object as its `required` list: moved into a group section, it would get the raw Ajv message
+const requiredGroupedSchema: VJSFSchema = {
+  type: 'object',
+  required: ['a', 'c'],
+  properties: {
+    a: { type: 'string', title: 'A', 'x-group': 'Identité' },
+    b: { type: 'string', title: 'B', 'x-group': 'Coordonnées' },
+    c: { type: 'string', title: 'C' }
+  }
+}
+
+test('moves the required keys into the group section of their field', () => {
+  const { schema } = buildSchema(requiredGroupedSchema, { layout: 'sections' })
+  expect(schema.allOf?.map(s => [s.title, s.required])).toEqual([['Identité', ['a']], ['Coordonnées', undefined]])
+  expect(schema.required).toEqual(['c'])
+})
+
+test('in tabs mode, the ungrouped required keys follow the Autres champs section', () => {
+  const { schema } = buildSchema(requiredGroupedSchema, { layout: 'tabs' })
+  expect(schema.allOf?.map(s => [s.title, s.required])).toEqual([['Identité', ['a']], ['Coordonnées', undefined], ['Autres champs', ['c']]])
+  expect(schema.required).toBeUndefined()
+})
+
+test('keeps the required keys at the root when the fields are not grouped', () => {
+  const { schema } = buildSchema(requiredGroupedSchema, { layout: 'sections', groups: 'none' })
+  expect(schema.allOf).toBeUndefined()
+  expect(schema.required).toEqual(['a', 'c'])
+})
+
+test('a required attachment field requires the __file input that replaces it', () => {
+  const { schema, attachmentKey } = buildSchema({ ...attachmentSchema, required: ['photo', 'nom'] })
+  expect(attachmentKey).toBe('photo')
+  // the photo column belongs to the Média group, so does its __file input
+  expect(schema.allOf?.map(s => [s.title, s.required])).toEqual([['Média', ['__file']]])
+  expect(schema.required).toEqual(['nom'])
+})
